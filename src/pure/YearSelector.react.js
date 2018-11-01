@@ -59,6 +59,9 @@ export default class YearSelector extends Component {
         flexGrow: 1,
         // Wrapper view default style.
       },this.props.style]}>
+        <Text style={[styles.yearText, this.props.yearText]}>
+          {this.state.year}
+        </Text>
         <Slider
           minimumValue={this.props.minDate.year()}
           maximumValue={this.props.maxDate.year()}
@@ -71,9 +74,6 @@ export default class YearSelector extends Component {
           onSlidingComplete={(year) => this._onFocus(year)}
           style={[this.props.yearSlider]}
           />
-        <Text style={[styles.yearText, this.props.yearText]}>
-          {this.state.year}
-        </Text>
       </View>
     );
   }
