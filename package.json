@@ -1,16 +1,16 @@
 {
-  "name": "react-native-calendar-datepicker",
-  "version": "1.2.2",
+  "name": "@cellfind/react-native-calendar-datepicker",
+  "version": "1.2.3",
   "dependencies": {
-    "lodash": "^4.15.0",
-    "moment": "^2.14.1",
+    "lodash": "^4.17.19",
+    "dayjs": "1.8.32",
     "prop-types": "^15.6.0"
   },
   "description": "Cross platform calendar datepicker library for React Native.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vlad-doru/react-native-calendar-datepicker.git"
+    "url": "git+https://github.com/Cellfind/react-native-calendar-datepicker.git"
   },
   "keywords": [
     "react",
@@ -20,10 +20,10 @@
     "cross",
     "platform"
   ],
-  "author": "Vlad-Doru Ion",
+  "author": "Vlad-Doru Ion / Clayton Barnard",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/vlad-doru/react-native-calendar-datepicker/issues"
+    "url": "https://github.com/Cellfind/react-native-calendar-datepicker/issues"
   },
-  "homepage": "https://github.com/vlad-doru/react-native-calendar-datepicker#readme"
+  "homepage": "https://github.com/Cellfind/react-native-calendar-datepicker#readme"
 }

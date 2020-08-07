@@ -1,0 +1,4 @@
+{
+    "flow.runOnAllFiles": true,
+    "javascript.validate.enable": false
+}

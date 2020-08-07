@@ -15,19 +15,19 @@ import {
 import ViewPropTypes from '../util/ViewPropTypes';
 
 // Component specific libraries.
-import _ from 'lodash';
-import Moment from 'moment';
+import map from 'lodash/map';
+import dayjs, { Dayjs } from 'dayjs';
 
 type Props = {
-  selected?: Moment,
+  selected?: Dayjs,
   // Styling
   style?: ViewPropTypes.style,
   // Controls the focus of the calendar.
-  focus: Moment,
-  onFocus?: (date: Moment) => void,
+  focus: Dayjs,
+  onFocus?: (date: Dayjs) => void,
   // Minimum and maximum valid dates.
-  minDate: Moment,
-  maxDate: Moment,
+  minDate: Dayjs,
+  maxDate: Dayjs,
   // Styling properties.
   monthText?: Text.propTypes.style,
   monthDisabledText?: Text.propTypes.style,
@@ -45,17 +45,17 @@ export default class MonthSelector extends Component {
   constructor(props: Object) {
     super(props);
 
-    const months = Moment.monthsShort();
+    const months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
     let groups = [];
     let group = [];
-    _.map(months, (month, index) => {
+    map(months, (month, index) => {
       if (index % 3 === 0) {
         group = [];
         groups.push(group);
       }
       // Check if the month is valid.
-      let maxChoice = Moment(this.props.focus).month(index).endOf('month');
-      let minChoice = Moment(this.props.focus).month(index).startOf('month');
+      let maxChoice = dayjs(this.props.focus).month(index).endOf('month');
+      let minChoice = dayjs(this.props.focus).month(index).startOf('month');
       group.push({
         valid: this.props.maxDate.diff(minChoice, 'seconds') >= 0 &&
                this.props.minDate.diff(maxChoice, 'seconds') <= 0,
@@ -69,7 +69,7 @@ export default class MonthSelector extends Component {
   }
 
   _onFocus = (index : number) : void => {
-    let focus = Moment(this.props.focus);
+    let focus = dayjs(this.props.focus);
     focus.month(index);
     this.props.onFocus && this.props.onFocus(focus);
   }
@@ -79,9 +79,9 @@ export default class MonthSelector extends Component {
       <View style={[{
         // Wrapper view default style.
       },this.props.style]}>
-        {_.map(this.state.months, (group, i) =>
+        {map(this.state.months, (group, i) =>
           <View key={i} style={[styles.group]}>
-            {_.map(group, (month, j) =>
+            {map(group, (month, j) =>
               <TouchableHighlight
                 key={j}
                 style={{flexGrow: 1}}
@@ -106,9 +106,9 @@ export default class MonthSelector extends Component {
   }
 }
 MonthSelector.defaultProps = {
-  focus: Moment(),
-  minDate: Moment(),
-  maxDate: Moment(),
+  focus: dayjs(),
+  minDate: dayjs(),
+  maxDate: dayjs(),
 };
 
 const styles = StyleSheet.create({

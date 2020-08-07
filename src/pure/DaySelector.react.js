@@ -17,20 +17,26 @@ import {
 import ViewPropTypes from '../util/ViewPropTypes';
 
 // Component specific libraries.
-import _ from 'lodash';
-import Moment from 'moment';
+import map from 'lodash/map';
+import min from 'lodash/min';
+import max from 'lodash/max';
+import times from 'lodash/times';
+import constant from 'lodash/constant';
+import dayjs, { Dayjs } from 'dayjs';
+import weekday from 'dayjs/plugin/weekday';
+dayjs.extend(weekday)
 
 type Props = {
   // Focus and selection control.
-  focus: Moment,
-  selected?: Moment,
-  onChange?: (date: Moment) => void,
-  onFocus?: (date: Moment) => void,
+  focus: Dayjs,
+  selected?: Dayjs,
+  onChange?: (date: Dayjs) => void,
+  onFocus?: (date: Dayjs) => void,
   slideThreshold?: number,
   monthOffset?: number,
   // Minimum and maximum dates.
-  minDate: Moment,
-  maxDate: Moment,
+  minDate: Dayjs,
+  maxDate: Dayjs,
   // Styling properties.
   dayHeaderView?: ViewPropTypes.style,
   dayHeaderText?: Text.propTypes.style,
@@ -89,15 +95,15 @@ export default class DaySelector extends Component {
 
         // Get the height, width and compute the threshold and offset for swipe.
         const {height, width} = Dimensions.get('window');
-        const threshold = this.props.slideThreshold || _.min([width / 3, 250]);
-        const maxOffset = _.max([height, width]);
+        const threshold = this.props.slideThreshold || min([width / 3, 250]);
+        const maxOffset = max([height, width]);
         const dx = gestureState.dx;
-        const newFocus = Moment(this.props.focus).add(dx < 0 ? 1 : -1, 'month');
+        const newFocus = dayjs(this.props.focus).add(dx < 0 ? 1 : -1, 'month');
         const valid =
           this.props.maxDate.diff(
-            Moment(newFocus).startOf('month'), 'seconds') >= 0 &&
+            dayjs(newFocus).startOf('month'), 'seconds') >= 0 &&
           this.props.minDate.diff(
-            Moment(newFocus).endOf('month'), 'seconds') <= 0;
+            dayjs(newFocus).endOf('month'), 'seconds') <= 0;
 
         // If the threshold is met perform the necessary animations and updates,
         // and there is at least one valid date in the new focus perform the
@@ -148,7 +154,7 @@ export default class DaySelector extends Component {
     }
 
     if (this.props.monthOffset != nextProps.monthOffset && nextProps.monthOffset !== 0) {
-      const newFocus = Moment(this.props.focus).add(nextProps.monthOffset, 'month');
+      const newFocus = dayjs(this.props.focus).add(nextProps.monthOffset, 'month');
       this.props.onFocus && this.props.onFocus(newFocus);
     }
   }
@@ -156,10 +162,10 @@ export default class DaySelector extends Component {
   _computeDays = (props: Object) : Array<Array<Object>> => {
     let result = [];
     const currentMonth = props.focus.month();
-    let iterator = Moment(props.focus);
+    let iterator = dayjs(props.focus);
     while (iterator.month() === currentMonth) {
       if (iterator.weekday() === 0 || result.length === 0) {
-        result.push(_.times(7, _.constant({})));
+        result.push(times(7, constant({})));
       }
       let week = result[result.length - 1];
       week[iterator.weekday()] = {
@@ -167,7 +173,7 @@ export default class DaySelector extends Component {
                this.props.minDate.diff(iterator, 'seconds') <= 0,
         date: iterator.date(),
         selected: props.selected && iterator.isSame(props.selected, 'day'),
-        today: iterator.isSame(Moment(), 'day'),
+        today: iterator.isSame(dayjs(), 'day'),
       };
       // Add it to the result here.
       iterator.add(1, 'day');
@@ -177,7 +183,7 @@ export default class DaySelector extends Component {
   };
 
   _onChange = (day : Object) : void => {
-    let date = Moment(this.props.focus).add(day.date - 1 , 'day');
+    let date = dayjs(this.props.focus).add(day.date - 1 , 'day');
     this.props.onChange && this.props.onChange(date);
   }
 
@@ -185,14 +191,14 @@ export default class DaySelector extends Component {
     return (
       <View>
         <View style={[styles.headerView, this.props.dayHeaderView]}>
-          {_.map(Moment.weekdaysShort(true), (day) =>
+          {map(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], (day) =>
             <Text key={day} style={[styles.headerText, this.props.dayHeaderText]}>
               {day}
             </Text>
           )}
         </View>
         <View ref="wrapper" {...this._panResponder.panHandlers}>
-          {_.map(this.state.days, (week, i) =>
+          {map(this.state.days, (week, i) =>
             <View key={i} style={[
                 styles.rowView,
                 this.props.dayRowView,
@@ -200,7 +206,7 @@ export default class DaySelector extends Component {
                   borderBottomWidth: 0,
                 } : null,
               ]}>
-              {_.map(week, (day, j) =>
+              {map(week, (day, j) =>
                 <TouchableHighlight
                   key={j}
                   style={[
@@ -232,9 +238,9 @@ export default class DaySelector extends Component {
   }
 }
 DaySelector.defaultProps = {
-  focus: Moment().startOf('month'),
-  minDate: Moment(),
-  maxDate: Moment(),
+  focus: dayjs().startOf('month'),
+  minDate: dayjs(),
+  maxDate: dayjs(),
 };
 
 const styles = StyleSheet.create({

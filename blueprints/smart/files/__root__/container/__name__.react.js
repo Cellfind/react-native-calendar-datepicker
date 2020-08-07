@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 
 // Component specific libraries.
-import _ from 'lodash';
 
 type Props = {
   children?: any,

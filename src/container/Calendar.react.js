@@ -17,8 +17,7 @@ import {
 } from 'react-native';
 
 // Component specific libraries.
-import _ from 'lodash';
-import Moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 // Pure components importing.
 import ViewPropTypes from '../util/ViewPropTypes';
 import YearSelector from '../pure/YearSelector.react';
@@ -36,12 +35,12 @@ const RIGHT_CHEVRON = '\u276F';
 
 type Props = {
   // The core properties.
-  selected?: Moment,
-  onChange?: (date: Moment) => void,
+  selected?: Dayjs,
+  onChange?: (date: Dayjs) => void,
   slideThreshold?: number,
   // Minimum and maximum date.
-  minDate: Moment,
-  maxDate: Moment,
+  minDate: Dayjs,
+  maxDate: Dayjs,
   // The starting stage for selection. Defaults to day.
   // Can be overwritten by finalStage.
   startStage: Stage,
@@ -77,7 +76,7 @@ type Props = {
 type State = {
   stage: Stage,
   // Focus points to the first day of the month that is in current focus.
-  focus: Moment,
+  focus: Dayjs,
   monthOffset?: number,
 };
 
@@ -92,7 +91,7 @@ export default class Calendar extends Component {
                   props.finalStage : props.startStage;
     this.state = {
       stage: stage,
-      focus: Moment(props.selected).startOf('month'),
+      focus: dayjs(props.selected).startOf('month'),
       monthOffset: 0,
     }
   }
@@ -133,7 +132,7 @@ export default class Calendar extends Component {
     this.setState({monthOffset: 1});
   };
 
-  _changeFocus = (focus : Moment) : void => {
+  _changeFocus = (focus : Dayjs) : void => {
     this.setState({focus, monthOffset: 0});
     if (this.props.finalStage != DAY_SELECTOR &&
         this.state.stage == this.props.finalStage) {
@@ -146,10 +145,10 @@ export default class Calendar extends Component {
   render() {
     const barStyle = StyleSheet.flatten([styles.barView, this.props.barView]);
 
-    const previousMonth = Moment(this.state.focus).subtract(1, 'month');
-    const previousMonthValid = this.props.minDate.diff(Moment(previousMonth).endOf('month'), 'seconds') <= 0;
-    const nextMonth = Moment(this.state.focus).add(1, 'month');
-    const nextMonthValid = this.props.maxDate.diff(Moment(nextMonth).startOf('month'), 'seconds') >= 0;
+    const previousMonth = dayjs(this.state.focus).subtract(1, 'month');
+    const previousMonthValid = this.props.minDate.diff(dayjs(previousMonth).endOf('month'), 'seconds') <= 0;
+    const nextMonth = dayjs(this.state.focus).add(1, 'month');
+    const nextMonthValid = this.props.maxDate.diff(dayjs(nextMonth).startOf('month'), 'seconds') >= 0;
 
     return (
       <View style={[{
@@ -249,8 +248,8 @@ export default class Calendar extends Component {
   }
 }
 Calendar.defaultProps = {
-  minDate: Moment(),
-  maxDate: Moment().add(10, 'years'),
+  minDate: dayjs(),
+  maxDate: dayjs().add(10, 'years'),
   startStage: DAY_SELECTOR,
   finalStage: DAY_SELECTOR,
   showArrows: true,

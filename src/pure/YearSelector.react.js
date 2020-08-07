@@ -14,17 +14,16 @@ import {
 import ViewPropTypes from '../util/ViewPropTypes';
 
 // Component specific libraries.
-import _ from 'lodash';
-import Moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 
 type Props = {
   style?: ViewPropTypes.style,
   // Focus and onFocus for managing the calendar.
-  focus: Moment,
-  onFocus?: (date : Moment) => void,
+  focus: Dayjs,
+  onFocus?: (date : Dayjs) => void,
   // Minimum and maximum date allowed.
-  minDate: Moment,
-  maxDate: Moment,
+  minDate: Dayjs,
+  maxDate: Dayjs,
   // Styling properties.
   minimumTrackTintColor?: string,
   maximumTrackTintColor?: string,
@@ -48,7 +47,7 @@ export default class YearSelector extends Component {
   }
 
   _onFocus = (year : number) : void => {
-    let date = Moment(this.props.focus);
+    let date = dayjs(this.props.focus);
     date.year(year);
     this.props.onFocus && this.props.onFocus(date);
   }
@@ -79,9 +78,9 @@ export default class YearSelector extends Component {
   }
 }
 YearSelector.defaultProps = {
-  focus: Moment().startOf('month'),
-  minDate: Moment(),
-  maxDate: Moment(),
+  focus: dayjs().startOf('month'),
+  minDate: dayjs(),
+  maxDate: dayjs(),
 };
 
 const styles = StyleSheet.create({
