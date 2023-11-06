@@ -9,12 +9,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {
   LayoutAnimation,
-  Slider,
   View,
   Text,
   TouchableHighlight,
   StyleSheet,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 
 // Component specific libraries.
 import dayjs, { Dayjs } from 'dayjs';

@@ -6,12 +6,12 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {
-  Slider,
   View,
   Text,
   StyleSheet,
 } from 'react-native';
 import ViewPropTypes from '../util/ViewPropTypes';
+import Slider from '@react-native-community/slider';
 
 // Component specific libraries.
 import dayjs, { Dayjs } from 'dayjs';

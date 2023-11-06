@@ -2,8 +2,9 @@
   "name": "@cellfind/react-native-calendar-datepicker",
   "version": "1.2.3",
   "dependencies": {
-    "lodash": "^4.17.19",
+    "@react-native-community/slider": "^4.4.3",
     "dayjs": "1.8.32",
+    "lodash": "^4.17.19",
     "prop-types": "^15.6.0"
   },
   "description": "Cross platform calendar datepicker library for React Native.",
