@@ -69,10 +69,12 @@ export default class MonthSelector extends Component {
   }
 
   _onFocus = (index : number) : void => {
-    let focus = dayjs(this.props.focus);
-    focus.month(index);
-    this.props.onFocus && this.props.onFocus(focus);
-  }
+    let focus = dayjs(this.props.focus).month(index);
+    // If `focus` is part of the state, it should be updated like this:
+    this.setState({ focus: focus }, () => {
+      // Call the onFocus prop, if it exists, after the state has been updated
+      this.props.onFocus && this.props.onFocus(focus);
+    });
 
   render() {
     return (
