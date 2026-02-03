@@ -3,16 +3,15 @@
 * @flow
 */
 
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {
-  LayoutAnimation,
-  TouchableHighlight,
+  Pressable,
   View,
   Text,
   StyleSheet,
 } from 'react-native';
-import ViewPropTypes from '../util/ViewPropTypes';
+import type { TextStyle, ViewStyle } from 'react-native';
+import toDayjs from '../util/toDayjs';
 
 // Component specific libraries.
 import map from 'lodash/map';
@@ -21,7 +20,7 @@ import dayjs, { Dayjs } from 'dayjs';
 type Props = {
   selected?: Dayjs,
   // Styling
-  style?: ViewPropTypes.style,
+  style?: ViewStyle,
   // Controls the focus of the calendar.
   focus: Dayjs,
   onFocus?: (date: Dayjs) => void,
@@ -29,22 +28,15 @@ type Props = {
   minDate: Dayjs,
   maxDate: Dayjs,
   // Styling properties.
-  monthText?: Text.propTypes.style,
-  monthDisabledText?: Text.propTypes.style,
-  selectedText?: Text.propTypes.style,
+  monthText?: TextStyle,
+  monthDisabledText?: TextStyle,
+  selectedText?: TextStyle,
 };
-type State = {
-  months: Array<Array<Object>>,
-};
-
 export default class MonthSelector extends Component {
   props: Props;
-  state: State;
   static defaultProps: Props;
 
-  constructor(props: Object) {
-    super(props);
-
+  _computeMonths = (props: Props) : Array<Array<Object>> => {
     const months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
     let groups = [];
     let group = [];
@@ -54,23 +46,20 @@ export default class MonthSelector extends Component {
         groups.push(group);
       }
       // Check if the month is valid.
-      let maxChoice = dayjs(this.props.focus).month(index).endOf('month');
-      let minChoice = dayjs(this.props.focus).month(index).startOf('month');
+      let maxChoice = toDayjs(props.focus).month(index).endOf('month');
+      let minChoice = toDayjs(props.focus).month(index).startOf('month');
       group.push({
-        valid: this.props.maxDate.diff(minChoice, 'seconds') >= 0 &&
-               this.props.minDate.diff(maxChoice, 'seconds') <= 0,
+        valid: toDayjs(props.maxDate).diff(minChoice, 'seconds') >= 0 &&
+               toDayjs(props.minDate).diff(maxChoice, 'seconds') <= 0,
         name: month,
         index,
       });
     })
-    this.state = {
-      months: groups,
-    };
+    return groups;
   }
 
   _onFocus = (index: number): void => {
-    console.log(`Month pressed: ${index}`);
-    let focus = dayjs(this.props.focus).month(index);
+    let focus = toDayjs(this.props.focus).month(index);
     this.props.onFocus && this.props.onFocus(focus);
   }
   
@@ -80,25 +69,25 @@ export default class MonthSelector extends Component {
       <View style={[{
         // Wrapper view default style.
       },this.props.style]}>
-        {map(this.state.months, (group, i) =>
+        {map(this._computeMonths(this.props), (group, i) =>
           <View key={i} style={[styles.group]}>
             {map(group, (month, j) =>
-              <TouchableHighlight
+              <Pressable
                 key={j}
                 style={{flexGrow: 1}}
-                activeOpacity={1}
-                underlayColor='transparent'
-                onPress={() => month.valid && this._onFocus(month.index)}>
+                android_ripple={{ color: 'rgba(255,255,255,0.15)' }}
+                hitSlop={6}
+                onPress={() => this._onFocus(month.index)}>
                 <Text style={[
                   styles.monthText,
                   this.props.monthText,
                   month.valid ? null : styles.disabledText,
                   month.valid ? null : this.props.monthDisabledText,
-                  month.index ===  (this.props.selected && this.props.selected.month()) ? this.props.selectedText : null,
+                  month.index === (this.props.selected && toDayjs(this.props.selected).month()) ? this.props.selectedText : null,
                 ]}>
                   {month.name}
                 </Text>
-              </TouchableHighlight>
+              </Pressable>
             )}
           </View>
         )}

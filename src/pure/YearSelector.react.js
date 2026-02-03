@@ -3,21 +3,21 @@
 * @flow
 */
 
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {
   View,
   Text,
   StyleSheet,
 } from 'react-native';
-import ViewPropTypes from '../util/ViewPropTypes';
+import type { TextStyle, ViewStyle } from 'react-native';
+import toDayjs from '../util/toDayjs';
 import Slider from '@react-native-community/slider';
 
 // Component specific libraries.
 import dayjs, { Dayjs } from 'dayjs';
 
 type Props = {
-  style?: ViewPropTypes.style,
+  style?: ViewStyle,
   // Focus and onFocus for managing the calendar.
   focus: Dayjs,
   onFocus?: (date : Dayjs) => void,
@@ -27,11 +27,11 @@ type Props = {
   // Styling properties.
   minimumTrackTintColor?: string,
   maximumTrackTintColor?: string,
-  yearSlider?: Slider.propTypes.style,
-  yearText?: Text.propTypes.style,
+  yearSlider?: ViewStyle,
+  yearText?: TextStyle,
 };
 type State = {
-  year: Number,
+  year: number,
 };
 
 export default class YearSelector extends Component {
@@ -46,13 +46,23 @@ export default class YearSelector extends Component {
     }
   }
 
+  componentDidUpdate(prevProps: Props) {
+    const prevYear = toDayjs(prevProps.focus).year();
+    const nextYear = toDayjs(this.props.focus).year();
+    if (prevYear !== nextYear) {
+      this.setState({ year: nextYear });
+    }
+  }
+
   _onFocus = (year : number) : void => {
-    let date = dayjs(this.props.focus);
-    date.year(year);
+    let date = toDayjs(this.props.focus).year(year);
     this.props.onFocus && this.props.onFocus(date);
   }
 
   render() {
+    const minYear = toDayjs(this.props.minDate).year();
+    const maxYear = toDayjs(this.props.maxDate).year();
+    const focusYear = toDayjs(this.props.focus).year();
     return (
       <View style={[{
         flexGrow: 1,
@@ -62,13 +72,13 @@ export default class YearSelector extends Component {
           {this.state.year}
         </Text>
         <Slider
-          minimumValue={this.props.minDate.year()}
-          maximumValue={this.props.maxDate.year()}
+          minimumValue={minYear}
+          maximumValue={maxYear}
           // TODO: Add a property for this.
           minimumTrackTintColor={this.props.minimumTrackTintColor}
           maximumTrackTintColor={this.props.maximumTrackTintColor}
           step={1}
-          value={this.props.focus.year()}
+          value={focusYear}
           onValueChange={(year) => this.setState({year})}
           onSlidingComplete={(year) => this._onFocus(year)}
           style={[this.props.yearSlider]}

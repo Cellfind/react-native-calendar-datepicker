@@ -3,7 +3,6 @@
 * @flow
 */
 
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {
   Dimensions,
@@ -14,7 +13,8 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import ViewPropTypes from '../util/ViewPropTypes';
+import type { TextStyle, ViewStyle } from 'react-native';
+import toDayjs from '../util/toDayjs';
 
 // Component specific libraries.
 import map from 'lodash/map';
@@ -38,15 +38,15 @@ type Props = {
   minDate: Dayjs,
   maxDate: Dayjs,
   // Styling properties.
-  dayHeaderView?: ViewPropTypes.style,
-  dayHeaderText?: Text.propTypes.style,
-  dayRowView?: ViewPropTypes.style,
-  dayView?: ViewPropTypes.style,
-  daySelectedView?: ViewPropTypes.style,
-  dayText?: Text.propTypes.style,
-  dayTodayText?: Text.propTypes.style,
-  daySelectedText?: Text.propTypes.style,
-  dayDisabledText?: Text.propTypes.style,
+  dayHeaderView?: ViewStyle,
+  dayHeaderText?: TextStyle,
+  dayRowView?: ViewStyle,
+  dayView?: ViewStyle,
+  daySelectedView?: ViewStyle,
+  dayText?: TextStyle,
+  dayTodayText?: TextStyle,
+  daySelectedText?: TextStyle,
+  dayDisabledText?: TextStyle,
 };
 type State = {
   days: Array<Array<Object>>,
@@ -57,24 +57,14 @@ export default class DaySelector extends Component {
   state: State;
   static defaultProps: Props;
   _panResponder: PanResponder;
+  wrapperRef = React.createRef();
 
   constructor(props: Props) {
     super(props);
     this.state = {
       days: this._computeDays(props),
     }
-  }
-
-  _slide = (dx : number) => {
-    this.refs.wrapper.setNativeProps({
-      style: {
-        left: dx,
-      }
-    })
-  };
-
-  componentWillMount() {
-    // Hook the pan responder to interpretate gestures.
+    // Hook the pan responder to interpret gestures.
     this._panResponder = PanResponder.create({
       // Ask to be the responder:
       onStartShouldSetPanResponder: (evt, gestureState) => true,
@@ -98,11 +88,11 @@ export default class DaySelector extends Component {
         const threshold = this.props.slideThreshold || min([width / 3, 250]);
         const maxOffset = max([height, width]);
         const dx = gestureState.dx;
-        const newFocus = dayjs(this.props.focus).add(dx < 0 ? 1 : -1, 'month');
+        const newFocus = toDayjs(this.props.focus).add(dx < 0 ? 1 : -1, 'month');
         const valid =
-          this.props.maxDate.diff(
+          toDayjs(this.props.maxDate).diff(
             dayjs(newFocus).startOf('month'), 'seconds') >= 0 &&
-          this.props.minDate.diff(
+          toDayjs(this.props.minDate).diff(
             dayjs(newFocus).endOf('month'), 'seconds') <= 0;
 
         // If the threshold is met perform the necessary animations and updates,
@@ -145,45 +135,67 @@ export default class DaySelector extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps: Object) {
-    if (this.props.focus != nextProps.focus ||
-        this.props.selected != nextProps.selected) {
+  _slide = (dx : number) => {
+    if (!this.wrapperRef.current) {
+      return;
+    }
+    this.wrapperRef.current.setNativeProps({
+      style: {
+        left: dx,
+      }
+    })
+  };
+
+  componentDidUpdate(prevProps: Object) {
+    const prevFocus = toDayjs(prevProps.focus);
+    const nextFocus = toDayjs(this.props.focus);
+    const prevSelected = prevProps.selected ? toDayjs(prevProps.selected) : null;
+    const nextSelected = this.props.selected ? toDayjs(this.props.selected) : null;
+    const focusChanged = !nextFocus.isSame(prevFocus, 'month');
+    const selectedChanged = prevSelected
+      ? !nextSelected || !nextSelected.isSame(prevSelected, 'day')
+      : !!nextSelected;
+
+    if (focusChanged || selectedChanged) {
       this.setState({
-        days: this._computeDays(nextProps),
+        days: this._computeDays(this.props),
       })
     }
 
-    if (this.props.monthOffset != nextProps.monthOffset && nextProps.monthOffset !== 0) {
-      const newFocus = dayjs(this.props.focus).add(nextProps.monthOffset, 'month');
+    if (this.props.monthOffset != prevProps.monthOffset && this.props.monthOffset !== 0) {
+      const newFocus = toDayjs(this.props.focus).add(this.props.monthOffset, 'month');
       this.props.onFocus && this.props.onFocus(newFocus);
     }
   }
 
   _computeDays = (props: Object) : Array<Array<Object>> => {
     let result = [];
-    const currentMonth = props.focus.month();
-    let iterator = dayjs(props.focus);
+    const focus = toDayjs(props.focus);
+    const minDate = toDayjs(props.minDate);
+    const maxDate = toDayjs(props.maxDate);
+    const currentMonth = focus.month();
+    let iterator = dayjs(focus);
     while (iterator.month() === currentMonth) {
       if (iterator.weekday() === 0 || result.length === 0) {
         result.push(times(7, constant({})));
       }
       let week = result[result.length - 1];
       week[iterator.weekday()] = {
-        valid: this.props.maxDate.diff(iterator, 'seconds') >= 0 &&
-               this.props.minDate.diff(iterator, 'seconds') <= 0,
+        valid: maxDate.diff(iterator, 'seconds') >= 0 &&
+               minDate.diff(iterator, 'seconds') <= 0,
         date: iterator.date(),
-        selected: props.selected && iterator.isSame(props.selected, 'day'),
+        selected: props.selected && iterator.isSame(toDayjs(props.selected), 'day'),
         today: iterator.isSame(dayjs(), 'day'),
       };
       // Add it to the result here.
-      iterator.add(1, 'day');
+      iterator = iterator.add(1, 'day');
     }
     LayoutAnimation.easeInEaseOut();
     return result;
   };
 
   _onChange = (day : Object) : void => {
-    let date = dayjs(this.props.focus).add(day.date - 1 , 'day');
+    let date = toDayjs(this.props.focus).add(day.date - 1 , 'day');
     this.props.onChange && this.props.onChange(date);
   }
 
@@ -197,7 +209,7 @@ export default class DaySelector extends Component {
             </Text>
           )}
         </View>
-        <View ref="wrapper" {...this._panResponder.panHandlers}>
+        <View ref={this.wrapperRef} {...this._panResponder.panHandlers}>
           {map(this.state.days, (week, i) =>
             <View key={i} style={[
                 styles.rowView,

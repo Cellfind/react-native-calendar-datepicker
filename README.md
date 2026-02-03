@@ -10,9 +10,11 @@ Here is a quick example of how it works, with custom appearance:
 
 ## Installation
 
-`npm install --save react-native-calendar-datepicker`
+`npm install --save @cellfind/react-native-calendar-datepicker @react-native-community/slider`
 
-__Minimum react-native: "^0.33.0"__
+Expo SDK 53+:
+
+`npx expo install @react-native-community/slider`
 
 ## Basic Usage
 
@@ -21,23 +23,23 @@ Getting started with this component is very very easy. However, the initial appe
 In its most basic form, the usage of this component looks like this:
 
 ```javascript
-import Calendar from 'react-native-calendar-datepicker';
-import Moment from 'moment';
+import Calendar from '@cellfind/react-native-calendar-datepicker';
+import dayjs from 'dayjs';
 
 ...
 
   <Calendar
     onChange={(date) => this.setState({date})}
     selected={this.state.date}
-    // We use Moment.js to give the minimum and maximum dates.
-    minDate={Moment().startOf('day')}
-    maxDate={Moment().add(10, 'years').startOf('day')}
+    // We use dayjs to give the minimum and maximum dates.
+    minDate={dayjs().startOf('day')}
+    maxDate={dayjs().add(10, 'years').startOf('day')}
     />
 ```
 
 ## API Reference
 
-**Note**: Each date provided will be a Moment.js object.
+**Note**: Each date provided will be a dayjs object.
 
 ### Basic properties
 
@@ -70,25 +72,25 @@ Below is the list of properties that can be used for styling. For a concrete exa
 
 | Property | Type | Explanation
 | --- | --- | ---
-| style | View.propTypes.style | View wrapper of the calendar
-| barView | View.propTypes.style | Styling the view wrapper for the bar at the top of the component
-| barText | Text.propTypes.style | Styling the text in the top bar
-| stageView | View.propTypes.style | Styling the view wrapper of the current stage
-| dayHeaderView | View.propTypes.style | Styling the view wrapper of day names
-| dayHeaderText | Text.propTypes.style | Styling the text of day names
-| dayRowView | View.propTypes.style | Styling each  row view of days
-| dayView | View.propTypes.style | View wrapper of each day
-| dayText | Text.propTypes.style | Styling the text of each day number
-| dayTodayText | Text.propTypes.style | Highlighting today in the calendar
-| daySelectedText | Text.propTypes.style | Highlighting the selected day in the calendar
-| dayDisabledText | Text.propTypes.style | Styling unavailable dates in the calendar
-| monthText | Text.propTypes.style | Styling the text for each month in the month selector
-| monthDisabledText | Text.propTypes.style | Styling unavailable months
-| monthSelectedText | Text.propTypes.style | Styling selected month
+| style | ViewStyle | View wrapper of the calendar
+| barView | ViewStyle | Styling the view wrapper for the bar at the top of the component
+| barText | TextStyle | Styling the text in the top bar
+| stageView | ViewStyle | Styling the view wrapper of the current stage
+| dayHeaderView | ViewStyle | Styling the view wrapper of day names
+| dayHeaderText | TextStyle | Styling the text of day names
+| dayRowView | ViewStyle | Styling each  row view of days
+| dayView | ViewStyle | View wrapper of each day
+| dayText | TextStyle | Styling the text of each day number
+| dayTodayText | TextStyle | Highlighting today in the calendar
+| daySelectedText | TextStyle | Highlighting the selected day in the calendar
+| dayDisabledText | TextStyle | Styling unavailable dates in the calendar
+| monthText | TextStyle | Styling the text for each month in the month selector
+| monthDisabledText | TextStyle | Styling unavailable months
+| monthSelectedText | TextStyle | Styling selected month
 | yearMinTintColor | string | Styling left side of year slider
 | yearMaxTintColor | string | Styling right side of year slider
-| yearSlider | Slider.propTypes.style | Styling the year slider
-| yearText | Text.propTypes.style | Styling the year text
+| yearSlider | ViewStyle | Styling the year slider
+| yearText | TextStyle | Styling the year text
 
 ## TODO
 

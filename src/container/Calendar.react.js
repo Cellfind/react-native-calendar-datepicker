@@ -3,9 +3,6 @@
 * @flow
 */
 
-console.ignoredYellowBox = ['Warning: Overriding '];
-
-import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import {
   LayoutAnimation,
@@ -14,12 +11,13 @@ import {
   TouchableHighlight,
   StyleSheet,
 } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
 import Slider from '@react-native-community/slider';
 
 // Component specific libraries.
 import dayjs, { Dayjs } from 'dayjs';
+import toDayjs from '../util/toDayjs';
 // Pure components importing.
-import ViewPropTypes from '../util/ViewPropTypes';
 import YearSelector from '../pure/YearSelector.react';
 import MonthSelector from '../pure/MonthSelector.react';
 import DaySelector from '../pure/DaySelector.react';
@@ -48,30 +46,30 @@ type Props = {
   // not be able to select the month.
   finalStage: Stage,
   // General styling properties.
-  style?: ViewPropTypes.style,
-  barView?: ViewPropTypes.style,
-  barText?: Text.propTypes.style,
-  stageView?: ViewPropTypes.style,
+  style?: ViewStyle,
+  barView?: ViewStyle,
+  barText?: TextStyle,
+  stageView?: ViewStyle,
   showArrows: boolean,
   // Styling properties for selecting the day.
-  dayHeaderView?: ViewPropTypes.style,
-  dayHeaderText?: Text.propTypes.style,
-  dayRowView?: ViewPropTypes.style,
-  dayView?: ViewPropTypes.style,
-  daySelectedView?: ViewPropTypes.style,
-  dayText?: Text.propTypes.style,
-  dayTodayText?: Text.propTypes.style,
-  daySelectedText?: Text.propTypes.style,
-  dayDisabledText?: Text.propTypes.style,
+  dayHeaderView?: ViewStyle,
+  dayHeaderText?: TextStyle,
+  dayRowView?: ViewStyle,
+  dayView?: ViewStyle,
+  daySelectedView?: ViewStyle,
+  dayText?: TextStyle,
+  dayTodayText?: TextStyle,
+  daySelectedText?: TextStyle,
+  dayDisabledText?: TextStyle,
   // Styling properties for selecting the month.
-  monthText?: Text.propTypes.style,
-  monthDisabledText?: Text.propTypes.style,
-  monthSelectedText?: Text.propTypes.style,
+  monthText?: TextStyle,
+  monthDisabledText?: TextStyle,
+  monthSelectedText?: TextStyle,
   // Styling properties for selecting the year.
   yearMinTintColor?: string,
   yearMaxTintColor?: string,
-  yearSlider?: Slider.propTypes.style,
-  yearText?: Text.propTypes.style,
+  yearSlider?: ViewStyle,
+  yearText?: TextStyle,
 };
 type State = {
   stage: Stage,
@@ -89,9 +87,10 @@ export default class Calendar extends Component {
     super(props);
     const stage = String(props.startStage) < String(props.finalStage) ?
                   props.finalStage : props.startStage;
+    const selected = props.selected ? toDayjs(props.selected) : dayjs();
     this.state = {
       stage: stage,
-      focus: dayjs(props.selected).startOf('month'),
+      focus: toDayjs(selected).startOf('month'),
       monthOffset: 0,
     }
   }
@@ -132,23 +131,34 @@ export default class Calendar extends Component {
     this.setState({monthOffset: 1});
   };
 
-  _changeFocus = (focus : Dayjs) : void => {
-    this.setState({focus, monthOffset: 0});
+  _changeFocus = (focus : Dayjs, nextStage?: Stage) : void => {
     if (this.props.finalStage != DAY_SELECTOR &&
         this.state.stage == this.props.finalStage) {
+      this.setState({focus, monthOffset: 0});
       this.props.onChange && this.props.onChange(focus);
-    } else {
-      this._nextStage();
+      return;
     }
+
+    if (nextStage) {
+      this.setState({focus, monthOffset: 0, stage: nextStage});
+      return;
+    }
+
+    this.setState({focus, monthOffset: 0});
+    this._nextStage();
   };
 
   render() {
     const barStyle = StyleSheet.flatten([styles.barView, this.props.barView]);
 
-    const previousMonth = dayjs(this.state.focus).subtract(1, 'month');
-    const previousMonthValid = this.props.minDate.diff(dayjs(previousMonth).endOf('month'), 'seconds') <= 0;
-    const nextMonth = dayjs(this.state.focus).add(1, 'month');
-    const nextMonthValid = this.props.maxDate.diff(dayjs(nextMonth).startOf('month'), 'seconds') >= 0;
+    const minDate = toDayjs(this.props.minDate);
+    const maxDate = toDayjs(this.props.maxDate);
+    const selected = this.props.selected ? toDayjs(this.props.selected) : undefined;
+    const focus = toDayjs(this.state.focus);
+    const previousMonth = dayjs(focus).subtract(1, 'month');
+    const previousMonthValid = minDate.diff(dayjs(previousMonth).endOf('month'), 'seconds') <= 0;
+    const nextMonth = dayjs(focus).add(1, 'month');
+    const nextMonthValid = maxDate.diff(dayjs(nextMonth).startOf('month'), 'seconds') >= 0;
 
     return (
       <View style={[{
@@ -196,13 +206,13 @@ export default class Calendar extends Component {
           {
             this.state.stage === DAY_SELECTOR ?
             <DaySelector
-              focus={this.state.focus}
-              selected={this.props.selected}
+              focus={focus}
+              selected={selected}
               onFocus={this._changeFocus}
               onChange={(date) => this.props.onChange && this.props.onChange(date)}
               monthOffset={this.state.monthOffset}
-              minDate={this.props.minDate}
-              maxDate={this.props.maxDate}
+              minDate={minDate}
+              maxDate={maxDate}
               // Control properties
               slideThreshold={this.props.slideThreshold}
               // Transfer the corresponding styling properties.
@@ -218,11 +228,11 @@ export default class Calendar extends Component {
               /> :
             this.state.stage === MONTH_SELECTOR ?
             <MonthSelector
-              focus={this.state.focus}
-              selected={this.props.selected}
-              onFocus={this._changeFocus}
-              minDate={this.props.minDate}
-              maxDate={this.props.maxDate}
+              focus={focus}
+              selected={selected}
+              onFocus={(date) => this._changeFocus(date, DAY_SELECTOR)}
+              minDate={minDate}
+              maxDate={maxDate}
               // Styling properties
               monthText={this.props.monthText}
               monthDisabledText={this.props.monthDisabledText}
@@ -230,10 +240,10 @@ export default class Calendar extends Component {
               /> :
             this.state.stage === YEAR_SELECTOR ?
             <YearSelector
-              focus={this.state.focus}
-              onFocus={this._changeFocus}
-              minDate={this.props.minDate}
-              maxDate={this.props.maxDate}
+              focus={focus}
+              onFocus={(date) => this._changeFocus(date, MONTH_SELECTOR)}
+              minDate={minDate}
+              maxDate={maxDate}
               // Styling properties
               minimumTrackTintColor={this.props.yearMinTintColor}
               maximumTrackTintColor={this.props.yearMaxTintColor}
